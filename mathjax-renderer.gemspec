@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'mathjax_renderer/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "mathjax_renderer"
+  spec.name          = "mathjax-renderer"
   spec.version       = Mathjax_Renderer::VERSION
   spec.authors       = ["sashee"]
   spec.email         = ["gsashee@gmail.com"]
