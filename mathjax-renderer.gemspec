@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'mathjax/renderer/version'
+require 'mathjax_renderer/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "mathjax-renderer"
-  spec.version       = Mathjax::Renderer::VERSION
+  spec.name          = "mathjax_renderer"
+  spec.version       = Mathjax_Renderer::VERSION
   spec.authors       = ["sashee"]
   spec.email         = ["gsashee@gmail.com"]
   spec.summary       = %q{Summary}
@@ -20,6 +20,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
+
+  spec.add_development_dependency "cucumber"
+  spec.add_development_dependency "rspec-expectations"
 
   spec.add_dependency "rails-assets-MathJax"
   spec.add_dependency "nokogiri"
