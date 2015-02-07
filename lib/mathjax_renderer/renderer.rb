@@ -3,6 +3,7 @@ module Mathjax_Renderer
     require 'capybara'
     require 'capybara/dsl'
     require 'headless'
+    require 'timeout'
 
     include Capybara::DSL
 
@@ -22,9 +23,7 @@ module Mathjax_Renderer
       server = RendererServer.new
       server.ensure_started!
 
-      added_margin = [@options[:padding],@options[:min_width]].max
-
-      url = server.add_content(@mathml, added_margin, @options[:extra_style])
+      url = server.add_content(@mathml, @options[:extra_style])
 
       Headless.ly do
 
@@ -42,7 +41,9 @@ module Mathjax_Renderer
           !html.css('.MathJax').empty? && html.css('.MathJax_Processing').empty? && html.css('.MathJax_Processed').empty?
         end
 
-        sleep 0.1 until mathjax_ready?(page)
+        Timeout.timeout(5) do
+          sleep 0.1 until mathjax_ready?(page)
+        end
 
         unless @image_base_url.nil?
           require 'chunky_png'
@@ -122,11 +123,11 @@ module Mathjax_Renderer
     require 'concurrent/atomic/atomic_boolean'
     require 'digest'
 
-    def add_content(content, added_margin, extra_style = '')
+    def add_content(content, extra_style = '')
       digest = Digest::SHA1.hexdigest(content)
       path = "/#{digest}.html"
       server.mount_proc path do |_, res|
-        res.body = response(content, added_margin, extra_style)
+        res.body = response(content, extra_style)
       end
 
       path
@@ -136,7 +137,7 @@ module Mathjax_Renderer
       server.config[:Port]
     end
 
-    def response(content, added_margin, extra_style)
+    def response(content, extra_style)
       "
         <html><head>
       <script type='text/x-mathjax_renderer-config'>
@@ -147,7 +148,7 @@ module Mathjax_Renderer
       </script>
       <script type='text/javascript'
             src='javascripts/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-<style>.MathJax{position:absolute!important;margin:#{added_margin}px!important;}
+<style>body{display: flex;justify-content: center;}
 #{extra_style}</style>
 </head><body>#{content}</body></html>"
     end
@@ -184,7 +185,10 @@ module Mathjax_Renderer
         false
       end
 
-      sleep 0.1 until server_started?
+      Timeout.timeout(5) do
+        sleep 0.1 until server_started?
+      end
+
     end
 
     private
