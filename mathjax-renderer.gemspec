@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Mathjax_Renderer::VERSION
   spec.authors       = ["sashee"]
   spec.email         = ["gsashee@gmail.com"]
-  spec.summary       = %q{Summary}
-  spec.description   = %q{Description}
-  spec.homepage      = ""
+  spec.summary       = %q{MathJax expression renderer}
+  spec.description   = %q{In case there is a need to pre-render MathJax expressions or insert as images}
+  spec.homepage      = "https://github.com/sashee/mathjax-renderer"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
