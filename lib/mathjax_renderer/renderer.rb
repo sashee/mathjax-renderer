@@ -28,7 +28,7 @@ module Mathjax_Renderer
       Headless.ly do
 
         Capybara.register_driver :chrome do |app|
-          Capybara::Selenium::Driver.new(app, :browser => :chrome)
+          Capybara::Selenium::Driver.new(app, :browser => :chrome, :args => ['no-sandbox','no-default-browser-check','no-first-run','disable-default-apps'])
         end
 
         Capybara.default_driver = :chrome
@@ -38,7 +38,9 @@ module Mathjax_Renderer
 
         def mathjax_ready?(page)
           html = Nokogiri::HTML(page.html)
-          !html.css('.MathJax').empty? && html.css('.MathJax_Processing').empty? && html.css('.MathJax_Processed').empty?
+          !html.css('.MathJax').empty? &&
+            html.css('.MathJax_Processing').empty? &&
+            html.css('.MathJax_Processed').empty?
         end
 
         Timeout.timeout(5) do
@@ -159,9 +161,16 @@ module Mathjax_Renderer
           require 'webrick'
           mathjax_dir = Gem::Specification.find_by_name("rails-assets-MathJax").gem_dir
 
-          self.server = WEBrick::HTTPServer.new(:Port => 0, :DocumentRoot => "#{mathjax_dir}/app/assets",:AccessLog => [], :Logger => WEBrick::Log::new('/dev/null', 7))
+          self.server = WEBrick::HTTPServer.new(
+            :Port => 0,
+            :DocumentRoot => "#{mathjax_dir}/app/assets",
+            :AccessLog => [],
+            :Logger => WEBrick::Log::new('/dev/null', 7)
+          )
 
-          server.mount '/javascripts/MathJax/fonts', WEBrick::HTTPServlet::FileHandler, "#{mathjax_dir}/app/assets/fonts/MathJax/fonts"
+          server.mount '/javascripts/MathJax/fonts',
+                       WEBrick::HTTPServlet::FileHandler,
+                       "#{mathjax_dir}/app/assets/fonts/MathJax/fonts"
 
           begin
             server.start
