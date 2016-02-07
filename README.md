@@ -7,6 +7,8 @@ generating images from MathJax expressions which can be inserted to the site ins
 expression, thus making them visible to readers. Also, there is an option to generate the HTML,
 so you can remove the client-side scripts.
 
+You can find some background in this blog post: https://advancedweb.hu/2015/03/17/mathjax-processing-on-the-server-side/
+
 ## Installation
 
 Add this line to your application's Gemfile:
