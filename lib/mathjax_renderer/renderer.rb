@@ -2,7 +2,6 @@ module Mathjax_Renderer
   class Renderer
     require 'capybara'
     require 'capybara/dsl'
-    require 'headless'
     require 'timeout'
 
     include Capybara::DSL
@@ -23,61 +22,71 @@ module Mathjax_Renderer
       server = RendererServer.new
       server.ensure_started!
 
-      url = server.add_content(@mathml, @options[:extra_style])
+      url = server.add_content(@mathml, @options[:extra_style], @options[:padding])
 
-      Headless.ly do
+			require 'phantomjs/poltergeist'
+			require 'phantomjs'
+			Capybara.register_driver :poltergeist do |app|
+				Capybara::Poltergeist::Driver.new(app, :phantomjs => Phantomjs.path)
+			end
+			Capybara.default_driver = :poltergeist
+			Capybara.app_host = "http://localhost:#{server.port}"
 
-        Capybara.register_driver :chrome do |app|
-          Capybara::Selenium::Driver.new(app, :browser => :chrome, :args => ['no-sandbox','no-default-browser-check','no-first-run','disable-default-apps'])
-        end
+			visit url
 
-        Capybara.default_driver = :chrome
-        Capybara.app_host = "http://localhost:#{server.port}"
+			def mathjax_ready?(page)
+				html = Nokogiri::HTML(page.html)
+				!html.css('.MathJax').empty? &&
+					html.css('.MathJax_Processing').empty? &&
+					html.css('.MathJax_Processed').empty?
+			end
 
-        visit url
+			Timeout.timeout(5) do
+				sleep 0.1 until mathjax_ready?(page)
+			end
 
-        def mathjax_ready?(page)
-          html = Nokogiri::HTML(page.html)
-          !html.css('.MathJax').empty? &&
-            html.css('.MathJax_Processing').empty? &&
-            html.css('.MathJax_Processed').empty?
-        end
+			unless @image_base_url.nil?
+				require 'chunky_png'
+				driver = page.driver
 
-        Timeout.timeout(5) do
-          sleep 0.1 until mathjax_ready?(page)
-        end
+				require 'fileutils'
+				FileUtils.mkpath @image_base_url
 
-        unless @image_base_url.nil?
-          require 'chunky_png'
-          driver = page.driver
+				driver.save_screenshot(image_path)
 
-          require 'fileutils'
-          FileUtils.mkpath @image_base_url
+				image = ChunkyPNG::Image.from_file(image_path)
 
-          driver.save_screenshot(image_path)
+				location = page.driver.evaluate_script <<-EOS
+					function() {
+						var ele  = document.querySelector('.MathJax .math');
+						var rect = ele.getBoundingClientRect();
+						return [rect.left, rect.top];
+					}();
+				EOS
 
-          el= page.find('.MathJax .math').native
+				size = page.driver.evaluate_script <<-EOS
+					function() {
+						var ele  = document.querySelector('.MathJax .math');
+						var rect = ele.getBoundingClientRect();
+						return [rect.width, rect.height];
+					}();
+				EOS
 
-          image = ChunkyPNG::Image.from_file(image_path)
+				correction = [(@options[:min_width] -(size[0] + 2 * @options[:padding])) / 2,0].max
 
-          correction = [(@options[:min_width] -(el.size.width + 2 * @options[:padding])) / 2,0].max
+				x = location[0] + 1 - @options[:padding]-correction
+				y = location[1] + 1 - @options[:padding]
+				width = [size[0].ceil + 2 * @options[:padding],@options[:min_width]].max
+				height = size[1]+ 2 * @options[:padding]
 
-          x = el.location.x + 1 - @options[:padding]-correction
-          y = el.location.y + 1 - @options[:padding]
-          width = [el.size.width + 2 * @options[:padding],@options[:min_width]].max
-          height = el.size.height+ 2 * @options[:padding]
+				image.crop!(x, y, width, height)
+				image.save(image_path)
+			end
+			result = Nokogiri::HTML(page.html).css('.MathJax .math')[0]
 
-          image.crop!(x, y, width, height)
-          image.save(image_path)
-        end
-        result = Nokogiri::HTML(page.html).css('.MathJax')[0]
+			put_cache!(params_hash,result)
 
-        put_cache!(params_hash,result)
-
-        page.driver.quit
-
-        @html = result
-      end
+			@html = result
     end
 
     def html
@@ -125,11 +134,11 @@ module Mathjax_Renderer
     require 'concurrent/atomic/atomic_boolean'
     require 'digest'
 
-    def add_content(content, extra_style = '')
+    def add_content(content, extra_style = '', padding = 0)
       digest = Digest::SHA1.hexdigest(content)
       path = "/#{digest}.html"
       server.mount_proc path do |_, res|
-        res.body = response(content, extra_style)
+        res.body = response(content, extra_style, padding)
       end
 
       path
@@ -139,7 +148,7 @@ module Mathjax_Renderer
       server.config[:Port]
     end
 
-    def response(content, extra_style)
+    def response(content, extra_style, padding)
       "
         <html><head>
       <script type='text/x-mathjax_renderer-config'>
@@ -151,7 +160,11 @@ module Mathjax_Renderer
       <script type='text/javascript'
             src='javascripts/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 <style>body{display: flex;justify-content: center;}
-#{extra_style}</style>
+#{extra_style}
+.MathJax{
+	left: #{padding}px;
+	top: #{padding}px;
+}</style>
 </head><body>#{content}</body></html>"
     end
 

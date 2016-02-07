@@ -29,10 +29,6 @@ mathjax-renderer can generate the HTML from running the MathJax scripts, and it 
 generate an image from the result. It uses a global cache, so it is fast for the second time for the
 same input.
 
-### Requirements
-
-mathjax-renderer uses Chrome with Xvfb, so they need to be installed (sorry, not gonna work on Windows).
-
 ### Generating the HTML
 
 To generated the HTML, just call:

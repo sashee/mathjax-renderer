@@ -27,9 +27,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rails-assets-MathJax"
   spec.add_dependency "nokogiri"
   spec.add_dependency "concurrent-ruby"
-  spec.add_dependency "selenium-webdriver"
   spec.add_dependency "capybara"
-  spec.add_dependency "chromedriver-helper"
   spec.add_dependency "chunky_png"
-  spec.add_dependency "headless"
+	spec.add_dependency "phantomjs"
+	spec.add_dependency "poltergeist"
 end

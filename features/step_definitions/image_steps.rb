@@ -62,7 +62,7 @@ Then(/^it's width is (\d+)px$/) do |arg1|
 end
 
 Given(/^the additional styles are$/) do |string|
-  renderer = Mathjax_Renderer::Renderer.new(@expression, $tmpdir, additional_styles:string)
+  renderer = Mathjax_Renderer::Renderer.new(@expression, $tmpdir, extra_style:string)
   @image = ChunkyPNG::Image.from_file("#{$tmpdir}/#{renderer.image_name}")
 end
 
@@ -70,7 +70,10 @@ Then(/^the generated image is mostly blue$/) do
   blue = 0
   @image.width.times do |x|
     @image.height.times do |y|
-       blue+=1 if ChunkyPNG::Color.b(@image[1,1])==255
+			b = ChunkyPNG::Color.b(@image[x,y])
+			g = ChunkyPNG::Color.g(@image[x,y])
+			r = ChunkyPNG::Color.r(@image[x,y])
+       blue += 1 if b == 255 && g == 0 && r == 0
     end
   end
 

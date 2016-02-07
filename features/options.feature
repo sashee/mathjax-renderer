@@ -18,6 +18,6 @@ Feature: Padding, min width and additional styles can be set for image generatio
     """
       And the additional styles are
     """
-      body{background-color:blue;}
+		body{background-color:blue;}
     """
     Then the generated image is mostly blue
