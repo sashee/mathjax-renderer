@@ -42,7 +42,7 @@ module Mathjax_Renderer
 			end
 
 			Timeout.timeout(5) do
-				sleep 0.1 until mathjax_ready?(page)
+				sleep 0.2 until mathjax_ready?(page)
 			end
 
 			unless @image_base_url.nil?
@@ -157,14 +157,14 @@ module Mathjax_Renderer
             showMathMenu:false
           });
       </script>
-      <script type='text/javascript'
-            src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 <style>body{display: flex;justify-content: center;}
 #{extra_style}
 .MathJax{
 	left: #{padding}px;
 	top: #{padding}px;
 }</style>
+      <script type='text/javascript'
+            src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 </head><body>#{content}</body></html>"
     end
 
