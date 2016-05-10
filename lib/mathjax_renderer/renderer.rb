@@ -158,7 +158,7 @@ module Mathjax_Renderer
           });
       </script>
       <script type='text/javascript'
-            src='javascripts/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+            src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 <style>body{display: flex;justify-content: center;}
 #{extra_style}
 .MathJax{
@@ -172,18 +172,16 @@ module Mathjax_Renderer
       if start!
         Thread.start do
           require 'webrick'
-          mathjax_dir = Gem::Specification.find_by_name("rails-assets-MathJax").gem_dir
 
           self.server = WEBrick::HTTPServer.new(
             :Port => 0,
-            :DocumentRoot => "#{mathjax_dir}/app/assets",
             :AccessLog => [],
             :Logger => WEBrick::Log::new('/dev/null', 7)
           )
 
-          server.mount '/javascripts/MathJax/fonts',
-                       WEBrick::HTTPServlet::FileHandler,
-                       "#{mathjax_dir}/app/assets/fonts/MathJax/fonts"
+          server.mount_proc "/index.html" do |_, res|
+            res.body = "OK"
+          end
 
           begin
             server.start
@@ -194,7 +192,7 @@ module Mathjax_Renderer
       end
       def server_started?
         require 'net/http'
-        uri = URI("http://localhost:#{port}/javascripts/MathJax/MathJax.js")
+        uri = URI("http://localhost:#{port}/index.html")
 
         req = Net::HTTP::Get.new(uri)
         res = Net::HTTP.start(uri.hostname, uri.port) {|http|

@@ -24,7 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "cucumber"
   spec.add_development_dependency "rspec-expectations"
 
-  spec.add_dependency "rails-assets-MathJax"
   spec.add_dependency "nokogiri"
   spec.add_dependency "concurrent-ruby"
   spec.add_dependency "capybara"
