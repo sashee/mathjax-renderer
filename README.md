@@ -54,9 +54,6 @@ don't forget to include them as well:
 @font-face {font-family: MathJax_Size4; src: url('http://cdn.mathjax.org/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff?rev=2.5.0') format('woff'), url('http://cdn.mathjax.org/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf?rev=2.5.0') format('opentype')}
 ```
 
-_Note:_ don't forget that you already have these as a transitive dependency to rails-assets-MathJax.
-Be nice and use those instead.
-
 ### Generating image
 
 To generate the image as well, just supply a base folder to store the images:
